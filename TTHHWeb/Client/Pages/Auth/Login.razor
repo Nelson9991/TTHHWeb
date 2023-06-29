@@ -1,0 +1,92 @@
+﻿@page "/auth/login"
+@using System.Text.Json;
+@using TTHHWeb.Client.Auth;
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@inject ILoginService LoginService
+@layout AuthLayout
+
+<MudCard Style="margin-top: 20%; padding: 5px">
+  <MudCardHeader>
+    <MudText Typo="Typo.h4">Inicio de Sesión</MudText>
+  </MudCardHeader>
+  <MudCardContent>
+    <MudForm @ref="form" Model="_loginUsuarioRequest">
+      <MudTextField T="string" @bind-Value="_loginUsuarioRequest.CodigoUsuario"
+                    Label="Usuario"
+                    Required="true" RequiredError="El usuario es requerido!" />
+      <MudTextField T="string" Label="Contraseña" @ref="pwField1"
+                    InputType="InputType.Password" Required="true"
+                     @bind-Value="_loginUsuarioRequest.Password"
+                    RequiredError="La contraseña es requerida!" />
+      <MudSelect T="string" @bind-Value="_loginUsuarioRequest.CodigoCompañia"
+                 Placeholder="Seleccione el código de compañia"
+                 AdornmentIcon="@Icons.Material.Filled.Key"
+                 AdornmentColor="Color.Info"
+                 Required="true"
+                 RequiredError="Debe seleccionar un código">
+        @foreach (var emisor in _emisoresList)
+        {
+          <MudSelectItem Value="@(emisor.Codigo.ToString())">C - @emisor.Codigo. @emisor.NombreEmisor</MudSelectItem>
+        }
+      </MudSelect>
+    </MudForm>
+  </MudCardContent>
+  <MudCardActions>
+    <MudButton Variant="Variant.Filled" Color="Color.Info" OnClick="LoginUser">Ingresar</MudButton>
+  </MudCardActions>
+</MudCard>
+
+@code {
+  MudTextField<string>? pwField1;
+  MudForm form = null!;
+
+  private LoginUserRequest _loginUsuarioRequest = new();
+  private List<EmisorResponse> _emisoresList = new();
+
+  protected override async Task OnInitializedAsync()
+  {
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<EmisorResponse>>("api/emisor");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _emisoresList = httpResp.Response;
+  }
+
+  private async Task LoginUser()
+  {
+    if (!form.IsValid)
+    {
+      return;
+    }
+
+    var httpResp = await HttpRepository.PostAsJsonAndReturnRawResponse("api/usuario/login", _loginUsuarioRequest);
+    if (httpResp.Error)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    var userInfo = await httpResp.GetResponseBodyAsync();
+
+    var userObj = JsonSerializer.Deserialize<List<LoginUserResponse>>(userInfo.ToString()!, new JsonSerializerOptions
+      {
+        PropertyNameCaseInsensitive = true
+      })[0];
+
+    if (!userObj!.Emisor.ToString().ToLower().Equals(_loginUsuarioRequest.CodigoCompañia.ToLower()))
+    {
+      Snackbar.Add("El código de compañia no coincide con el usuario!", Severity.Error);
+      return;
+    }
+
+    await LoginService.Login(JsonSerializer.Serialize(userObj));
+
+    Snackbar.Add("Bienvenido!", Severity.Success);
+    NavigationManager.NavigateTo("/");
+  }
+}
