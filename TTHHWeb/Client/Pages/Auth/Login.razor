@@ -43,11 +43,11 @@
   MudForm form = null!;
 
   private LoginUserRequest _loginUsuarioRequest = new();
-  private List<EmisorResponse> _emisoresList = new();
+  private List<EmisorDto> _emisoresList = new();
 
   protected override async Task OnInitializedAsync()
   {
-    var httpResp = await HttpRepository.GetFromJsonAsync<List<EmisorResponse>>("api/emisor");
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<EmisorDto>>("api/emisor");
     if (httpResp.Error || httpResp.Response is null)
     {
       Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
@@ -59,6 +59,7 @@
 
   private async Task LoginUser()
   {
+    await form.Validate();
     if (!form.IsValid)
     {
       return;

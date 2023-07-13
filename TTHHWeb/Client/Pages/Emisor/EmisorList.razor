@@ -1,0 +1,57 @@
+﻿@page "/emisores"
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@attribute [Authorize]
+
+<MudDataGrid T="EmisorDto" Items="@_emisoresList" Virtualize="true" SortMode="SortMode.Single"
+             QuickFilter="@_quickFilter" Filterable="true">
+  <ToolBarContent>
+    <MudText Typo="Typo.h6">Emisores</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+  </ToolBarContent>
+  <Columns>
+    <PropertyColumn Property="x => x.Codigo" Title="Código" />
+    <PropertyColumn Property="x => x.NombreEmisor" Title="Nombre" />
+    <PropertyColumn Property="x => x.Ruc" Title="RUC" />
+  </Columns>
+  <PagerContent>
+    <MudDataGridPager T="EmisorDto" />
+  </PagerContent>
+</MudDataGrid>
+
+@code {
+  private List<EmisorDto> _emisoresList = new();
+  private string _searchString;
+
+  protected override async Task OnInitializedAsync()
+  {
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<EmisorDto>>("api/emisor");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _emisoresList = httpResp.Response;
+  }
+
+  // quick filter - filter gobally across multiple columns with the same input
+  private Func<EmisorDto, bool> _quickFilter => x =>
+  {
+    if (string.IsNullOrWhiteSpace(_searchString))
+      return true;
+
+    if (x.Codigo.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.NombreEmisor.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.Ruc.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    return false;
+  };
+}

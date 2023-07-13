@@ -1,0 +1,57 @@
+﻿@using TTHHWeb.Shared.Models.CentroCosto;
+
+<MudContainer MaxWidth="MaxWidth.Large">
+  <MudCard>
+    <MudCardHeader>
+      <MudText Typo="Typo.h5">@FormTitle</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+      <MudForm @ref="form" Model="CentroCostoModel">
+        <MudNumericField T="int" @bind-Value="CentroCostoModel.Codigo"
+                         Label="Código" Immediate="true" Disabled="@IsEdit"
+                         Required="true" RequiredError="El Código es requerido!" />
+
+        <MudTextField T="string" Label="Nombre"
+                      Immediate="true" Required="true"
+        @bind-Value="CentroCostoModel.NombreCentroCostos"
+                      RequiredError="El nombre del centro de costo es requerido!" />
+      </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="pb-3">
+      <MudStack Row="true">
+        <MudButton Color="Color.Success" OnClick="Submit"
+                   Variant="Variant.Filled">
+          GUARDAR
+        </MudButton>
+        <MudButton Color="Color.Error" Href="/centroscosto"
+                   Variant="Variant.Filled">
+          CANCELAR
+        </MudButton>
+      </MudStack>
+    </MudCardActions>
+  </MudCard>
+</MudContainer>
+
+@code {
+  [Parameter]
+  public ICentroCostoDto CentroCostoModel { get; set; } = null!;
+  [Parameter]
+  public EventCallback OnFormSubmit { get; set; }
+  [Parameter]
+  public string? FormTitle { get; set; }
+  [Parameter]
+  public bool IsEdit { get; set; }
+
+  MudForm form = null!;
+
+  private async Task Submit()
+  {
+    await form.Validate();
+
+    if (!form.IsValid)
+    {
+      return;
+    }
+    await OnFormSubmit.InvokeAsync();
+  }
+}

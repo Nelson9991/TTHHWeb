@@ -1,0 +1,38 @@
+﻿@page "/centroscosto/edit/{Codigo:int}"
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@using System.Text.Json;
+@using TTHHWeb.Client.Pages.CentroCosto.Components
+@using TTHHWeb.Shared.Models.CentroCosto;
+@attribute [Authorize]
+
+<CentroCostoForm CentroCostoModel="_centroCostoModel" FormTitle="Editar Centro de Costo"
+                 OnFormSubmit="EditCentroCosto" IsEdit="true" />
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public int Codigo { get; set; }
+
+  private UpsertCentroCostoDto _centroCostoModel = new();
+
+  protected override void OnParametersSet()
+  {
+    _centroCostoModel.Codigo = Codigo;
+  }
+
+  private async Task EditCentroCosto()
+  {
+    var httpResp = await HttpRepository.PutAsJson("api/centroCosto/editar", _centroCostoModel);
+    var respMsg = await httpResp.GetResponseBodyAsync();
+    if (httpResp.Error)
+    {
+      Snackbar.Add(respMsg, Severity.Error);
+      return;
+    }
+    Snackbar.Add(respMsg, Severity.Success);
+    NavigationManager.NavigateTo("/centroscosto");
+  }
+}
+

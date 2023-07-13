@@ -1,0 +1,37 @@
+﻿@page "/centroscosto/create"
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@using System.Text.Json;
+@using TTHHWeb.Client.Pages.CentroCosto.Components
+@using TTHHWeb.Shared.Models.CentroCosto;
+@attribute [Authorize]
+
+<CentroCostoForm CentroCostoModel="_centroCostoModel" FormTitle="Agregar Centro de Costo"
+                 OnFormSubmit="CreateCentroCosto" />
+
+@code {
+  private UpsertCentroCostoDto _centroCostoModel = new();
+
+  private async Task CreateCentroCosto()
+  {
+    var httpResp = await HttpRepository.PostAsJsonAndReturnRawResponse("api/centroCosto/crear", _centroCostoModel);
+    if (httpResp.Error)
+    {
+      var respMsg = await httpResp.GetResponseBodyAsync();
+      Snackbar.Add(respMsg, Severity.Error);
+      return;
+    }
+
+    var respObj = JsonSerializer.Deserialize<CentroCostoDto>(await httpResp.GetResponseBodyAsync(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+    if (respObj.Mensaje != "Ingreso Exitoso")
+    {
+      Snackbar.Add(respObj.Mensaje, Severity.Error);
+      return;
+    }
+
+    Snackbar.Add(respObj!.Mensaje, Severity.Success);
+    NavigationManager.NavigateTo("/centroscosto");
+  }
+}

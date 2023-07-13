@@ -8,13 +8,13 @@
 
 <MudLayout>
   <MudAppBar Elevation="1">
-    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-    <MudText Typo="Typo.h5" Class="ml-3 mr-4">TTHH</MudText>
+    <MudIconButton Class="mr-3" Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
     <AuthorizeView>
       <Authorized>
         <MudText Typo="Typo.h6">
-          Compañia - @context.User.Claims.FirstOrDefault(x => x.Type == "NombreCompañia")!.Value
+          COMPAÑIA - @context.User.Claims.FirstOrDefault(x => x.Type == "NombreCompañia")!.Value
         </MudText>
+        <MudIcon Class="ml-3" Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Inherit" Size="Size.Medium" />
       </Authorized>
     </AuthorizeView>
     <MudSpacer />
@@ -31,8 +31,10 @@
   <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
     <NavMenu />
   </MudDrawer>
-  <MudMainContent Style="">
-    @Body
+  <MudMainContent>
+    <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge" Class="py-5">
+      @Body
+    </MudContainer>
   </MudMainContent>
 </MudLayout>
 

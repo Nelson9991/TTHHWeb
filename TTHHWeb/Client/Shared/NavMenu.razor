@@ -1,9 +1,17 @@
 ﻿<MudNavMenu>
+  <MudStack Class="py-5" Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+    <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="@Color.Primary" Title="TTHH"></MudIcon>
+    <MudText Typo="Typo.h6" Color="Color.Primary">Talento Humano</MudText>
+  </MudStack>
+  <MudDivider Class="pb-2" />
   <MudNavLink Href="/" Match="@NavLinkMatch.All"
               Icon="@Icons.Material.Filled.Home">
     Inicio
   </MudNavLink>
-  <MudNavLink Href="/tecnicos" Icon="@Icons.Material.Filled.PeopleAlt">
+  <MudNavLink Href="/emisores" Icon="@Icons.Material.Filled.PeopleAlt">
     Emisores
+  </MudNavLink>
+  <MudNavLink Href="/centroscosto" Icon="@Icons.Material.Filled.MonetizationOn">
+    Centro de Costos
   </MudNavLink>
 </MudNavMenu>

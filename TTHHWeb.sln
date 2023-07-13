@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33815.320
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TTHHWeb.Server", "TTHHWeb\Server\TTHHWeb.Server.csproj", "{87D2AAF0-772B-498C-846D-22AF6D0DAF96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTHHWeb.Server", "TTHHWeb\Server\TTHHWeb.Server.csproj", "{87D2AAF0-772B-498C-846D-22AF6D0DAF96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TTHHWeb.Client", "TTHHWeb\Client\TTHHWeb.Client.csproj", "{5BA709AF-1AA9-41F5-B58E-348BC8B33386}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTHHWeb.Client", "TTHHWeb\Client\TTHHWeb.Client.csproj", "{5BA709AF-1AA9-41F5-B58E-348BC8B33386}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TTHHWeb.Shared", "TTHHWeb\Shared\TTHHWeb.Shared.csproj", "{DDB31D28-7DF4-45EE-AA20-DE593865A5C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TTHHWeb.Shared", "TTHHWeb\Shared\TTHHWeb.Shared.csproj", "{DDB31D28-7DF4-45EE-AA20-DE593865A5C3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
