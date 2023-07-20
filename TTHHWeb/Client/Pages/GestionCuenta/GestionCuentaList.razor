@@ -18,12 +18,6 @@
   </MudCardContent>
 </MudCard>
 
-<MudButton Color="Color.Secondary" Variant="Variant.Filled"
-           EndIcon="@Icons.Material.Filled.Add" Href="/cuentascontables/create"
-           Class="mb-3">
-  Agregar Nuevo
-</MudButton>
-
 <MudDataGrid T="CuentaContableDto" Items="@_CuentaContableList" Virtualize="true" SortMode="SortMode.Single"
              QuickFilter="@_quickFilter" Filterable="true">
   <ToolBarContent>
