@@ -1,0 +1,55 @@
+﻿@page "/trabajadores/edit/{Comp:int}/{Codigo:int}"
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@using System.Text.Json;
+@using TTHHWeb.Client.Pages.Trabajador.Components
+@using TTHHWeb.Shared.Models.Trabajador;
+@inject IMapper Mapper
+@attribute [Authorize]
+
+<TrabajadorForm TrabajadorModel="_trabajadorModel" FormTitle="Editar Trabajador"
+                 OnFormSubmit="EditTrabajador" IsEdit="true" />
+
+@code {
+  [Parameter]
+  [EditorRequired]
+  public int Codigo { get; set; }
+
+  [Parameter]
+  [EditorRequired]
+  public int Comp { get; set; }
+
+  private UpsertTrabajadorDto _trabajadorModel = new();
+
+  protected override async Task OnInitializedAsync()
+  {
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<TrabajadorDto>>($"api/trabajador/{Comp}");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _trabajadorModel = Mapper.Map<UpsertTrabajadorDto>(httpResp.Response.FirstOrDefault(x => x.Id_Trabajador == Codigo));
+  }
+
+  protected override void OnParametersSet()
+  {
+    _trabajadorModel.Id_Trabajador = Codigo;
+  }
+
+  private async Task EditTrabajador()
+  {
+    var httpResp = await HttpRepository.PutAsJson("api/trabajador/editar", _trabajadorModel);
+    var respMsg = await httpResp.GetResponseBodyAsync();
+    if (httpResp.Error)
+    {
+      Snackbar.Add(respMsg, Severity.Error);
+      return;
+    }
+    Snackbar.Add(respMsg, Severity.Success);
+    NavigationManager.NavigateTo("/trabajadores");
+  }
+}
+

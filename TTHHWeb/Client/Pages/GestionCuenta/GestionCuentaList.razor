@@ -1,0 +1,115 @@
+﻿@page "/cuentascontables"
+@using TTHHWeb.Shared.Models.CuentaContable;
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize]
+
+<MudCard Elevation="2" Class="mb-3">
+  <MudCardContent>
+    <MudForm @ref="form" Model="sucursal">
+      <MudText Typo="Typo.h6">Buscar Cuenta Por Sucursal</MudText>
+      <MudNumericField @bind-Value="sucursal" Label="Sucursal Id" Variant="Variant.Outlined"
+                       Required="true" RequiredError="Debe ingresar in Id mayor a 0" />
+    </MudForm>
+    <MudCardActions>
+      <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BuscarCuentaContable">Buscar</MudButton>
+    </MudCardActions>
+  </MudCardContent>
+</MudCard>
+
+<MudButton Color="Color.Secondary" Variant="Variant.Filled"
+           EndIcon="@Icons.Material.Filled.Add" Href="/cuentascontables/create"
+           Class="mb-3">
+  Agregar Nuevo
+</MudButton>
+
+<MudDataGrid T="CuentaContableDto" Items="@_CuentaContableList" Virtualize="true" SortMode="SortMode.Single"
+             QuickFilter="@_quickFilter" Filterable="true">
+  <ToolBarContent>
+    <MudText Typo="Typo.h6">Cuentas Contables</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+  </ToolBarContent>
+  <Columns>
+    <PropertyColumn Property="x => x.Sucursal" Title="Sucursal" />
+    <PropertyColumn Property="x => x.CodigoCuentaContable" Title="Código Cuenta" />
+    <PropertyColumn Property="x => x.DescripcionCuenta" Title="Descripion Cuenta" />
+    <PropertyColumn Property="x => x.DescripcionConcepto" Title="Descripion Concepto" />
+    <PropertyColumn Property="x => x.CodigoConceptoNomina" Title="Codigo Concepto" />
+    <PropertyColumn Property="x => x.CodigoCategoriaocupacional" Title="Codigo Categoria Ocupacional" />
+    <PropertyColumn Property="x => x.CodigoTipoCuenta" Title="Codigo Tipo Cuenta" />
+    <PropertyColumn Property="x => x.DescripcionCategoria" Title="Descripcion Categoria" />
+    <PropertyColumn Property="x => x.DescripcionConcepto" Title="Descripcion Concepto" />
+    <PropertyColumn Property="x => x.CodigoOperacion" Title="Codigo Operacion" />
+  </Columns>
+  <PagerContent>
+    <MudDataGridPager T="CuentaContableDto" />
+  </PagerContent>
+</MudDataGrid>
+
+@code {
+  private List<CuentaContableDto> _CuentaContableList = new();
+  private string _searchString = string.Empty;
+  private int sucursal = 1;
+
+  MudForm form = null!;
+
+  private async Task BuscarCuentaContable()
+  {
+    await form.Validate();
+
+    if (!form.IsValid)
+    {
+      return;
+    }
+
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<CuentaContableDto>>($"api/CuentaContable/{sucursal}");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _CuentaContableList = httpResp.Response;
+  }
+
+  // quick filter - filter gobally across multiple columns with the same input
+  private Func<CuentaContableDto, bool> _quickFilter => x =>
+  {
+    if (string.IsNullOrWhiteSpace(_searchString))
+      return true;
+
+    if (x.DescripcionCuenta.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.CodigoCuentaContable.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    return false;
+  };
+
+  private async Task DeleteCuentaContable(CuentaContableDto item)
+  {
+    var options = new DialogOptions { CloseOnEscapeKey = true };
+    var parameters = new DialogParameters<ConfirmActionDialog> { { x => x.DialogContet, "¿Está seguro de eliminar este registro?" } };
+    var dialog = await DialogService.ShowAsync<ConfirmActionDialog>("Eliminar Cuenta", parameters, options);
+
+    var result = await dialog.Result;
+
+    if (!result.Canceled)
+    {
+      var httpResp = await HttpRepository.PostAsJson($"api/CuentaContable/eliminar", item);
+      var responseBody = await httpResp.GetResponseBodyAsync();
+
+      if (httpResp.Error)
+      {
+        Snackbar.Add(responseBody, Severity.Error);
+        return;
+      }
+
+      Snackbar.Add(responseBody, Severity.Success);
+    }
+  }
+}

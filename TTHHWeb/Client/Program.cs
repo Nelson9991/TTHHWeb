@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using TTHHWeb.Client;
 using TTHHWeb.Client.Auth;
+using TTHHWeb.Client.Mappers;
 using TTHHWeb.Shared.Data.Repository;
 using TTHHWeb.Shared.Data.Repository.IRepository;
 
@@ -21,6 +22,7 @@ builder.Services.AddScoped<AppAuthProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(
   sp => sp.GetRequiredService<AppAuthProvider>()
 );
+builder.Services.AddAutoMapper(typeof(MapperProfiles).Assembly);
 builder.Services.AddScoped<ILoginService>(sp => sp.GetRequiredService<AppAuthProvider>());
 
 builder.Services.AddScoped<IHttpRepository, HttpRepository>();

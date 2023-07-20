@@ -1,0 +1,143 @@
+﻿@using TTHHWeb.Shared.Models.Trabajador;
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+  <MudCard>
+    <MudCardHeader>
+      <MudText Typo="Typo.h5">@FormTitle</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+      <MudForm @ref="form" Model="TrabajadorModel">
+        <MudGrid>
+          <MudItem xs="6">
+            <MudNumericField @bind-Value="TrabajadorModel.Id_Trabajador"
+                             Label="Id Trabajador" Disabled="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudNumericField @bind-Value="TrabajadorModel.COMP_Codigo"
+                             Label="Codigo Compañia" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudSelect @bind-Value="TrabajadorModel.Tipo_trabajador"
+                       Label="Tipo Trabajador">
+              @foreach (var item in _tipoTrabajadores)
+              {
+                <MudSelectItem Value="item.Descripcion">
+                  @item.Codigo
+                </MudSelectItem>
+              }
+            </MudSelect>
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Nombres"
+                          Label="Nombres" Immediate="true" Required="true"
+                          RequiredError="Los nombres son requeridos!" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Apellido_Paterno"
+                          Label="Apellido Paterno" Immediate="true" Required="true"
+                          RequiredError="El apellido paterno es requerido!" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Apellido_Materno"
+                          Label="Apellido Materno" Immediate="true" Required="true"
+                          RequiredError="El apellido materno es requerido!" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Identificacion"
+                          Label="Cedula" Immediate="true" Required="true"
+                          RequiredError="La Cedula es requerido!" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Entidad_Bancaria"
+                          Label="Entidad Bancaria" Immediate="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.CarnetIESS"
+                          Label="Carnet IESS" Immediate="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Direccion"
+                          Label="Dirección" Immediate="true"
+                          Lines="3" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Telefono_Fijo"
+                          Label="Telefono Fijo" Immediate="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField T="string" @bind-Value="TrabajadorModel.Telefono_Movil"
+                          Label="Telefono Celular" Immediate="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField @bind-Value="TrabajadorModel.Nivel_Salarial"
+                          Label="Nivel Salarial" Immediate="true" />
+          </MudItem>
+          <MudItem xs="6">
+            <MudTextField @bind-Value="TrabajadorModel.Nro_Cuenta_Bancaria"
+                          Label="Nor. Cuenta Bancaria" Immediate="true" />
+          </MudItem>
+        </MudGrid>
+      </MudForm>
+    </MudCardContent>
+    <MudCardActions Class="pb-3">
+      <MudStack Row="true">
+        <MudButton Color="Color.Success" OnClick="Submit"
+                   Variant="Variant.Filled">
+          GUARDAR
+        </MudButton>
+        <MudButton Color="Color.Error" Href="/trabajadores"
+                   Variant="Variant.Filled">
+          CANCELAR
+        </MudButton>
+      </MudStack>
+    </MudCardActions>
+  </MudCard>
+</MudContainer>
+
+@code {
+  [Parameter]
+  public ITrabajadorDto TrabajadorModel { get; set; } = null!;
+  [Parameter]
+  public EventCallback OnFormSubmit { get; set; }
+  [Parameter]
+  public string? FormTitle { get; set; }
+  [Parameter]
+  public bool IsEdit { get; set; }
+
+  MudForm form = null!;
+  private List<TipoTrabajadorDto> _tipoTrabajadores = new();
+
+  protected override async Task OnInitializedAsync()
+  {
+
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<TipoTrabajadorDto>>("api/trabajador/tipos");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _tipoTrabajadores = httpResp.Response;
+  }
+
+  private async Task Submit()
+  {
+    await form.Validate();
+
+    if (!form.IsValid)
+    {
+      return;
+    }
+
+    // Autogenerar las fechas
+    TrabajadorModel.FechaNacimiento = Convert.ToDateTime(DateTime.Now.AddYears(-18).ToString("MM/dd/yyyy")); // Ejemplo, ajustar según necesidad
+    TrabajadorModel.FechaIngreso = Convert.ToDateTime(DateTime.Now.ToString("MM/dd/yyyy"));
+    TrabajadorModel.FechaCese = Convert.ToDateTime(DateTime.Now.AddYears(1).ToString("MM/dd/yyyy")); // Ejemplo, ajustar según necesidad
+    TrabajadorModel.FechaReingreso = Convert.ToDateTime(DateTime.Now.AddMonths(6).ToString("MM/dd/yyyy")); // Ejemplo, ajustar según necesidad
+    TrabajadorModel.Fecha_Ult_Actualizacion = Convert.ToDateTime(DateTime.Now.ToString("MM/dd/yyyy"));
+
+    await OnFormSubmit.InvokeAsync();
+  }
+}

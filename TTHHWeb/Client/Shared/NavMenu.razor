@@ -1,11 +1,23 @@
 ﻿<MudNavMenu>
-  <MudStack Class="py-5" Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
-    <MudIcon Icon="@Icons.Material.Filled.SupervisorAccount" Color="@Color.Primary" Title="TTHH"></MudIcon>
+  <MudStack
+    Class="py-5"
+    Row="true"
+    AlignItems="AlignItems.Center"
+    Justify="Justify.Center"
+  >
+    <MudIcon
+      Icon="@Icons.Material.Filled.SupervisorAccount"
+      Color="@Color.Primary"
+      Title="TTHH"
+    ></MudIcon>
     <MudText Typo="Typo.h6" Color="Color.Primary">Talento Humano</MudText>
   </MudStack>
   <MudDivider Class="pb-2" />
-  <MudNavLink Href="/" Match="@NavLinkMatch.All"
-              Icon="@Icons.Material.Filled.Home">
+  <MudNavLink
+    Href="/"
+    Match="@NavLinkMatch.All"
+    Icon="@Icons.Material.Filled.Home"
+  >
     Inicio
   </MudNavLink>
   <MudNavLink Href="/emisores" Icon="@Icons.Material.Filled.PeopleAlt">
@@ -14,4 +26,44 @@
   <MudNavLink Href="/centroscosto" Icon="@Icons.Material.Filled.MonetizationOn">
     Centro de Costos
   </MudNavLink>
+  <MudNavLink
+    Href="/movimientoplanilla"
+    Icon="@Icons.Material.Filled.EventNote"
+  >
+    Movimientos de Planilla
+  </MudNavLink>
+  <MudNavLink Href="/tipooperacion" Icon="@Icons.Material.Filled.AttachMoney">
+    Tipos Operación
+  </MudNavLink>
+  <MudNavGroup Title="Datos Movimientos" Icon="@Icons.Material.Filled.EditNote">
+    <MudNavLink
+      Href="/movimientolist1y2"
+      Icon="@Icons.Material.Filled.SecurityUpdateWarning"
+    >
+      Movimientos Excepción 1 y 2
+    </MudNavLink>
+    <MudNavLink
+      Href="/movimientolist3"
+      Icon="@Icons.Material.Filled.SecurityUpdateWarning"
+    >
+      Movimientos Excepción 3
+    </MudNavLink>
+    <MudNavLink Href="/afectaiess" Icon="@Icons.Material.Filled.LocalHospital">
+      Afecta IESS
+    </MudNavLink>
+    <MudNavLink Href="/afectarenta" Icon="@Icons.Material.Filled.Fax">
+      Afecta Impuesto Renta
+    </MudNavLink>
+  </MudNavGroup>
+  <MudNavLink Href="/trabajadores" Icon="@Icons.Material.Filled.PeopleAlt">
+    Trabajadores
+  </MudNavLink>
+  <MudNavLink
+    Href="/cuentascontables"
+    Icon="@Icons.Material.Filled.AccountBalance"
+  >
+    Cuentas Contables
+  </MudNavLink>
 </MudNavMenu>
+
+

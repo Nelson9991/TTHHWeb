@@ -1,0 +1,29 @@
+﻿@page "/trabajadores/create"
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@using System.Text.Json;
+@using TTHHWeb.Client.Pages.Trabajador.Components
+@using TTHHWeb.Shared.Models.Trabajador;
+@attribute [Authorize]
+
+<TrabajadorForm TrabajadorModel="_trabajadorModel" FormTitle="Agregar Trabajador"
+                OnFormSubmit="CreateTrabajador" />
+
+@code {
+  private UpsertTrabajadorDto _trabajadorModel = new();
+
+  private async Task CreateTrabajador()
+  {
+    var httpResp = await HttpRepository.PostAsJsonAndReturnRawResponse("api/trabajador/crear", _trabajadorModel);
+    var respMsg = await httpResp.GetResponseBodyAsync();
+    if (httpResp.Error)
+    {
+      Snackbar.Add(respMsg, Severity.Error);
+      return;
+    }
+
+    Snackbar.Add(respMsg, Severity.Success);
+    NavigationManager.NavigateTo("/trabajadores");
+  }
+}

@@ -1,0 +1,109 @@
+﻿@page "/trabajadores"
+@using TTHHWeb.Shared.Models.Trabajador;
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize]
+
+<MudCard Elevation="2" Class="mb-3">
+  <MudCardContent>
+    <MudForm @ref="form" Model="_sucursalId">
+      <MudText Typo="Typo.h6">Buscar Trabajador Por Sucursal</MudText>
+      <MudNumericField @bind-Value="_sucursalId" Label="Sucursal Id" Variant="Variant.Outlined"
+                       Required="true" RequiredError="Debe ingresar in Id mayor a 0" />
+    </MudForm>
+    <MudCardActions>
+      <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@BuscarTrabajador">Buscar</MudButton>
+    </MudCardActions>
+  </MudCardContent>
+</MudCard>
+
+<MudButton Color="Color.Secondary" Variant="Variant.Filled"
+           EndIcon="@Icons.Material.Filled.Add" Href="/trabajadores/create"
+           Class="mb-3">
+  Agregar Nuevo
+</MudButton>
+
+<MudDataGrid T="TrabajadorDto" Items="@_trabajadorList" Virtualize="true" SortMode="SortMode.Single"
+             Filterable="true">
+  <Columns>
+    <TemplateColumn Filterable="false" Sortable="false"
+                    CellClass="d-flex justify-end">
+      <CellTemplate>
+        <MudStack Row>
+          <MudButton Color="Color.Info" Variant="Variant.Filled"
+                     Href=@($"/trabajadores/edit/{context.Item.COMP_Codigo}/{context.Item.Id_Trabajador}")>
+            Editar
+          </MudButton>
+          <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => DeleteTrabajador(context.Item.COMP_Codigo.Value, context.Item.Id_Trabajador.Value))">Eliminar</MudButton>
+        </MudStack>
+      </CellTemplate>
+    </TemplateColumn>
+    <PropertyColumn Property="x => x.COMP_Codigo" Title="Código Compañia" />
+    <PropertyColumn Property="x => x.Id_Trabajador" Title="Id Trabajador" />
+    <PropertyColumn Property="x => x.Tipo_trabajador" Title="Tipo Trabajador" />
+    <PropertyColumn Property="x => x.Apellido_Paterno" Title="Apellido Paterno" />
+    <PropertyColumn Property="x => x.Apellido_Materno" Title="Apellido Materno" />
+    <PropertyColumn Property="x => x.Nombres" Title="Nombres" />
+    <PropertyColumn Property="x => x.Identificacion" Title="Identificación" />
+    <PropertyColumn Property="x => x.Entidad_Bancaria" Title="Entidad Bancaria" />
+    <PropertyColumn Property="x => x.CarnetIESS" Title="Carnet IESS" />
+    <PropertyColumn Property="x => x.Genero" Title="Telefono Movil" />
+    <PropertyColumn Property="x => x.Ocupacion" Title="Ocupación" />
+    <PropertyColumn Property="x => x.EstadoTrabajador" Title="Estado Trabajador" />
+    <PropertyColumn Property="x => x.FechaIngreso" Title="Fecha Ingreso" />
+    <PropertyColumn Property="x => x.FechaCese" Title="Fecha Cese" />
+  </Columns>
+  <PagerContent>
+    <MudDataGridPager T="TrabajadorDto" />
+  </PagerContent>
+</MudDataGrid>
+
+@code {
+  private List<TrabajadorDto> _trabajadorList = new();
+  private int _sucursalId = 1;
+
+  MudForm form = null!;
+
+  private async Task BuscarTrabajador()
+  {
+    await form.Validate();
+
+    if (!form.IsValid)
+    {
+      return;
+    }
+
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<TrabajadorDto>>($"api/trabajador/{_sucursalId}");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _trabajadorList = httpResp.Response;
+  }
+
+  private async Task DeleteTrabajador(int codCompania, int idTrabajador)
+  {
+    var options = new DialogOptions { CloseOnEscapeKey = true };
+    var parameters = new DialogParameters<ConfirmActionDialog> { { x => x.DialogContet, "¿Está seguro de eliminar este registro?" } };
+    var dialog = await DialogService.ShowAsync<ConfirmActionDialog>("Eliminar Trabajador", parameters, options);
+
+    var result = await dialog.Result;
+
+    if (!result.Canceled)
+    {
+      var httpResp = await HttpRepository.Delete($"api/trabajador/eliminar/{codCompania}/{idTrabajador}");
+      var responseBody = await httpResp.GetResponseBodyAsync();
+
+      if (httpResp.Error)
+      {
+        Snackbar.Add(responseBody, Severity.Error);
+        return;
+      }
+
+      Snackbar.Add(responseBody, Severity.Success);
+    }
+  }
+}

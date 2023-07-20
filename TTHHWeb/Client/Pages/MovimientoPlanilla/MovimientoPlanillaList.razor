@@ -1,0 +1,110 @@
+﻿@page "/movimientoplanilla"
+@using TTHHWeb.Shared.Models.MovimientoPlanilla;
+@inject IHttpRepository HttpRepository
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@attribute [Authorize]
+
+<MudButton Color="Color.Secondary" Variant="Variant.Filled"
+           EndIcon="@Icons.Material.Filled.Add" Href="/centroscosto/create"
+           Class="mb-3">
+  Agregar Nuevo
+</MudButton>
+
+<MudDataGrid T="MovimientoPlanillaDto" Items="@_movPlanillaList" Virtualize="true" SortMode="SortMode.Single"
+             QuickFilter="@_quickFilter" Filterable="true">
+  <ToolBarContent>
+    <MudText Typo="Typo.h6">Centros de Costos</MudText>
+    <MudSpacer />
+    <MudTextField @bind-Value="_searchString" Placeholder="Buscar" Adornment="Adornment.Start" Immediate="true"
+                  AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+  </ToolBarContent>
+  <Columns>
+    <TemplateColumn Filterable="false" Sortable="false"
+                    CellClass="d-flex justify-end">
+      <CellTemplate>
+        <MudStack Row>
+          <MudButton Color="Color.Info" Variant="Variant.Filled"
+                     Href=@($"/centroscosto/edit/{context.Item.CodigoConcepto}")>
+            Editar
+          </MudButton>
+          <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="@(() => DeleteMovimientoPlanilla(context.Item.CodigoConcepto))">Eliminar</MudButton>
+        </MudStack>
+      </CellTemplate>
+    </TemplateColumn>
+    <PropertyColumn Property="x => x.CodigoConcepto" Title="Código" />
+    <PropertyColumn Property="x => x.Concepto" Title="Concepto" />
+    <PropertyColumn Property="x => x.TipoOperacion" Title="Tipo Operación" />
+    <PropertyColumn Property="x => x.Cuenta1" Title="Cuenta 1" Filterable="false" Sortable="false" />
+    <PropertyColumn Property="x => x.Cuenta2" Title="Cuenta 2" Filterable="false" Sortable="false" />
+    <PropertyColumn Property="x => x.Cuenta3" Title="Cuenta 3" Filterable="false" Sortable="false" />
+    <PropertyColumn Property="x => x.Cuenta4" Title="Cuenta 4" Filterable="false" Sortable="false" />
+    <PropertyColumn Property="x => x.MovimientoExcepcion1" Title="Movimiento Excepcion 1" />
+    <PropertyColumn Property="x => x.MovimientoExcepcion1" Title="Movimiento Excepcion 2" />
+    <PropertyColumn Property="x => x.MovimientoExcepcion1" Title="Movimiento Excepcion 3" />
+    <PropertyColumn Property="x => x.Aplica_iess" Title="Aplica IESS" />
+    <PropertyColumn Property="x => x.Aplica_imp_renta" Title="Aplica Impuesto Renta" />
+    <PropertyColumn Property="x => x.Empresa_Afecta_Iess" Title="Afecta IESS" />
+  </Columns>
+  <PagerContent>
+    <MudDataGridPager T="MovimientoPlanillaDto" />
+  </PagerContent>
+</MudDataGrid>
+
+@code {
+  private List<MovimientoPlanillaDto> _movPlanillaList = new();
+  private string _searchString = string.Empty;
+
+  protected override async Task OnInitializedAsync()
+  {
+    var httpResp = await HttpRepository.GetFromJsonAsync<List<MovimientoPlanillaDto>>("api/movimientoPlanilla");
+    if (httpResp.Error || httpResp.Response is null)
+    {
+      Snackbar.Add(await httpResp.GetResponseBodyAsync(), Severity.Error);
+      return;
+    }
+
+    _movPlanillaList = httpResp.Response;
+  }
+
+  // quick filter - filter gobally across multiple columns with the same input
+  private Func<MovimientoPlanillaDto, bool> _quickFilter => x =>
+  {
+    if (string.IsNullOrWhiteSpace(_searchString))
+      return true;
+
+    if (x.Concepto.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.CodigoConcepto.ToString().Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    if (x.TipoOperacion.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+      return true;
+
+    return false;
+  };
+
+  private async Task DeleteMovimientoPlanilla(int codigoCosto)
+  {
+    var options = new DialogOptions { CloseOnEscapeKey = true };
+    var parameters = new DialogParameters<ConfirmActionDialog> { { x => x.DialogContet, "¿Está seguro de eliminar este registro?" } };
+    var dialog = await DialogService.ShowAsync<ConfirmActionDialog>("Eliminar Movimiento de Planilla", parameters, options);
+
+    var result = await dialog.Result;
+
+    if (!result.Canceled)
+    {
+      var httpResp = await HttpRepository.Delete($"api/movimientoPlanilla/eliminar/{codigoCosto}");
+      var responseBody = await httpResp.GetResponseBodyAsync();
+
+      if (httpResp.Error)
+      {
+        Snackbar.Add(responseBody, Severity.Error);
+        return;
+      }
+
+      Snackbar.Add(responseBody, Severity.Success);
+    }
+  }
+}
